@@ -189,7 +189,7 @@ ExceptionHandler(ExceptionType which)
 					bool isNegative = false;
 					int start = 0, end, size, ans = 0;
 					
-					size = synchConsole->Read(buf, maxBuf);
+					size = synchcons->Read(buf, maxBuf);
 
 					if (size == 0) {
 						DEBUG('a', "\n Invalid number.");
@@ -262,7 +262,7 @@ ExceptionHandler(ExceptionType which)
 					int number = machine->ReadRegister(4);
 
 					if (number == 0) {
-						synchConsole->Write("0", 1);
+						synchcons->Write("0", 1);
 						DEBUG('a', "\n Print number sucessful.");
 						printf("\n\n Print number sucessful.");
 						IncreasePC();
@@ -291,7 +291,7 @@ ExceptionHandler(ExceptionType which)
 
 						reverse(buf, 1, start - 1);
 
-						synchConsole->Write(buf, start);
+						synchcons->Write(buf, start);
 						DEBUG('a', "\n Print number sucessful.");
 						printf("\n\n Print number sucessful.");
 						IncreasePC();
@@ -300,7 +300,7 @@ ExceptionHandler(ExceptionType which)
 
 					buf[start] = '\0';
 					reverse(buf, 1, start - 1);
-					synchConsole->Write(buf, start);
+					synchcons->Write(buf, start);
 					DEBUG('a', "\n Print number sucessful.");
 					printf("\n\n Print number sucessful.");
 					IncreasePC();
