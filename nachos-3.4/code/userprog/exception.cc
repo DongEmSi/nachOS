@@ -132,20 +132,20 @@ ExceptionHandler(ExceptionType which)
 			return;
 
 		case PageFaultException:
-			DEBUG('a', "\n Page fault.");
-			printf("\n\n Page fault.");
+			DEBUG('a', "\nPage fault.");
+			printf("\n\nPage fault.");
 			interrupt->Halt();
 			break;
 
 		case ReadOnlyException:
-			DEBUG('a', "\n Page marked read-only");
-			printf("\n\n Page marked read-only");
+			DEBUG('a', "\nPage marked read-only");
+			printf("\n\nPage marked read-only");
 			interrupt->Halt();
 			break;
 
 		case BusErrorException:
-			DEBUG('a', "\n Invalid physical address");
-			printf("\n\n Invalid physical address");
+			DEBUG('a', "\nInvalid physical address");
+			printf("\n\nInvalid physical address");
 			interrupt->Halt();
 			break;
 
@@ -156,28 +156,28 @@ ExceptionHandler(ExceptionType which)
 			break;
 
 		case OverflowException:
-			DEBUG('a', "\n Overflow !!!");
-			printf("\n\n Overflow !!!");
+			DEBUG('a', "\nOverflow !!!");
+			printf("\n\nOverflow !!!");
 			interrupt->Halt();
 			break;
 
 		case IllegalInstrException:
-			DEBUG('a', "\n Illegal instr.");
-			printf("\n\n Illegal instr.");
+			DEBUG('a', "\nIllegal instr.");
+			printf("\n\nIllegal instr.");
 			interrupt->Halt();
 			break;
 
 		case NumExceptionTypes:
-			DEBUG('a', "\n Number exception types");
-			printf("\n\n Number exception types");
+			DEBUG('a', "\nNumber exception types");
+			printf("\n\nNumber exception types");
 			interrupt->Halt();
 			break;
 		
 		case SyscallException:
 			switch (type){
 				case SC_Halt:
-					DEBUG('a', "\n Shutdown, initiated by user program.");
-					printf("\n\n Shutdown, initiated by user program.");
+					DEBUG('a', "\nShutdown, initiated by user program.");
+					printf("\n\nShutdown, initiated by user program.");
 					interrupt->Halt();
 					break;
 				//Nho them increasePC vao truoc break hoac return nhe!
@@ -187,7 +187,7 @@ ExceptionHandler(ExceptionType which)
 					int maxBuf = 255; //integer co 4 bytes, theo chuan c++ 
 					char* buf = new char[maxBuf + 1];
 					bool isNegative = false;
-					int start = 0, end, size, ans = 0;
+					int start = 0, size, ans = 0;
 					
 					size = synchcons->Read(buf, maxBuf);
 
@@ -207,54 +207,59 @@ ExceptionHandler(ExceptionType which)
 					}
 
 					for (int i = start; i < size; ++i) {
-						if (buf[i] < '0' || buf[i] > '9') {
-							DEBUG('a', "\n Invalid number.");
-							printf("\n\n Invalid number.");
-
-							machine->WriteRegister(2, 0);
-							IncreasePC();
-							delete buf;
-							break;
-						}
-						else if (buf[i] == '.') {
+						if (buf[i] == '.') {
 							for (int j = i + 1; j < size; ++j) {
-								if (buf[i] != '0') {
+								if (buf[j] != '0') {
 									DEBUG('a', "\n Invalid number.");
 									printf("\n\n Invalid number.");
 
 									machine->WriteRegister(2, 0);
 									IncreasePC();
 									delete buf;
-									break;
+									return;
 								}
 							}
+							machine->WriteRegister(2, ans);
+							IncreasePC();
+							delete buf;
+							return;
+						}
+						else if (buf[i] < '0' || buf[i] > '9') {
+							DEBUG('a', "\n Invalid number.");
+							printf("\n\n Invalid number.");
+
+							machine->WriteRegister(2, 0);
+							IncreasePC();
+							delete buf;
+							return;
 						}
 						else {
-							ans += ans*10 + (buf[i] - '0');
-							start++;
-							if (start > 10) {
+							ans = ans*10 + (buf[i] - '0');
+							++start;
+							if (start > 10 && !isNegative) {
 								ans = 2147483647;
 
-								if (isNegative) ans *= -1;
-
-								DEBUG('a', "\n Read number sucessful.");
-								printf("\n\n Read number sucessful.");
 								machine->WriteRegister(2, ans);
 								IncreasePC();
 								delete buf;
-								break;
+								return;
+							}
+							else if (start > 11 && isNegative) {
+								ans = -2147483647;
+								machine->WriteRegister(2, ans);
+								IncreasePC();
+								delete buf;
+								return;
 							}
 						}
 					}
 
 					if (isNegative) ans *= -1;
 
-					DEBUG('a', "\n Read number sucessful.");
-					printf("\n\n Read number sucessful.");
 					machine->WriteRegister(2, ans);
 					IncreasePC();
 					delete buf;
-					break;
+					return;
 				}
 
 				case SC_PrintInt:
@@ -263,8 +268,6 @@ ExceptionHandler(ExceptionType which)
 
 					if (number == 0) {
 						synchcons->Write("0", 1);
-						DEBUG('a', "\n Print number sucessful.");
-						printf("\n\n Print number sucessful.");
 						IncreasePC();
 						break;
 					}
@@ -292,17 +295,13 @@ ExceptionHandler(ExceptionType which)
 						reverse(buf, 1, start - 1);
 
 						synchcons->Write(buf, start);
-						DEBUG('a', "\n Print number sucessful.");
-						printf("\n\n Print number sucessful.");
 						IncreasePC();
 						break;
 					}
 
 					buf[start] = '\0';
-					reverse(buf, 1, start - 1);
+					reverse(buf, 0, start - 1);
 					synchcons->Write(buf, start);
-					DEBUG('a', "\n Print number sucessful.");
-					printf("\n\n Print number sucessful.");
 					IncreasePC();
 					break;
 				}
