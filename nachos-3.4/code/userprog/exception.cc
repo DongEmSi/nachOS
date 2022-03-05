@@ -198,7 +198,7 @@ ExceptionHandler(ExceptionType which)
 						machine->WriteRegister(2, 0);
 						IncreasePC();
 						delete buf;
-						break;
+						return;
 					}
 
 					if (buf[0] == '-') {
