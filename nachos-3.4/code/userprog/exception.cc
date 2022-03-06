@@ -180,6 +180,12 @@ ExceptionHandler(ExceptionType which)
 					printf("\n\nShutdown, initiated by user program.");
 					interrupt->Halt();
 					break;
+
+				case SC_Exit: 
+				{
+					Exit(0);
+					IncreasePC();
+				}
 				//Nho them increasePC vao truoc break hoac return nhe!
 
 				case SC_ReadInt: 
@@ -305,6 +311,88 @@ ExceptionHandler(ExceptionType which)
 					IncreasePC();
 					break;
 				}
+
+				case SC_ReadChar:
+				{
+					int maxBuf = 255;
+					char* buf = new char[255];
+					int numBuf = synchcons->Read(buf, maxBuf);
+
+					if (numBuf > 1)
+					{
+						printf("This is not a character.");
+						DEBUG('a', "\nERROR: This is not a character.");
+						machine->WriteRegister(2, 0);
+					}
+					else if (numBuf == 0)
+					{
+						printf("No input!");
+						DEBUG('a', "\nERROR: No input!");
+						machine->WriteRegister(2, 0);
+					}
+					else
+					{
+						machine->WriteRegister(2, buf[0]);
+					}
+					IncreasePC();
+					delete buf;
+					break;
+				}
+
+				case SC_PrintChar:
+				{
+					char c = (char)machine->ReadRegister(4);
+					synchcons->Write(&c, 1);
+					IncreasePC();
+					break;
+				}
+
+				case SC_ReadString:
+				{
+					int virtAddr, size;
+					char* buf;
+					virtAddr = machine->ReadRegister(4);
+					size = machine->ReadRegister(5);
+					buf = User2System(virtAddr, size);
+					synchcons->Read(buf, size);
+					System2User(virtAddr, size, buf);
+					delete buf;
+					IncreasePC();
+					break;
+				}
+
+				case SC_PrintString:
+				{
+					int virtAddr;
+					char* buf;
+					virtAddr = machine->ReadRegister(4);
+					buf = User2System(virtAddr, 255);
+					int size = 0;
+					while (buf[size] != 0) size++;
+					synchcons->Write(buf, size + 1);
+					delete buf;
+					IncreasePC();
+					break;
+				}
+
+				case SC_Rand:
+				{
+					int start = 0;
+					int maxBuf = 255;
+					char* buf = new char[255];
+					RandomInit(123);
+					int r = Random();
+					while (r != 0) {
+						buf[start] = (char)(r % 10);
+						r /= 10;
+					}
+					buf[start] = '\0';
+					reverse(buf, 1, start - 1);
+					synchcons->Write(buf, start);
+					IncreasePC();
+					break;
+				}
+
 
 				case SC_Create:
 				{

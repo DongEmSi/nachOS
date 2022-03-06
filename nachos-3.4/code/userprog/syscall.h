@@ -31,6 +31,11 @@
 #define SC_Yield	10
 #define SC_ReadInt     11
 #define SC_PrintInt    12
+#define SC_ReadChar		13
+#define SC_PrintChar	14
+#define SC_ReadString	15
+#define SC_PrintString	16
+#define SC_Rand		17
 
 #ifndef IN_ASM
 
@@ -95,6 +100,15 @@ int ReadInt();
 
 void PrintInt(int number);
 
+char ReadChar();
+
+void PrintChar(char c);
+
+void ReadString(char* buffer, int length);
+
+void PrintString(char* buffer);
+
+int Rand();
 /* Open the Nachos file "name", and return an "OpenFileId" that can 
  * be used to read and write to the file.
  */
