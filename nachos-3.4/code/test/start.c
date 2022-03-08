@@ -138,6 +138,23 @@ ReadInt:
 	j $31
 	.end ReadInt
 
+	.globl PrintInt
+	.ent PrintInt
+PrintInt:
+	addiu $2,$0,SC_PrintInt
+	syscall
+	j $31
+	.end PrintInt
+
+
+	.globl PrintInt2
+	.ent PrintInt2
+PrintInt2:
+	addiu $2,$0,SC_PrintInt2
+	syscall
+	j $31
+	.end PrintInt2
+
 	.globl Rand
 	.ent Rand
 Rand:

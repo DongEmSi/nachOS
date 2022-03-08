@@ -36,6 +36,7 @@
 #define SC_ReadString	15
 #define SC_PrintString	16
 #define SC_Rand		17
+#define SC_PrintInt2    18
 
 #ifndef IN_ASM
 
@@ -99,6 +100,8 @@ int Create(char *name);
 int ReadInt();
 
 void PrintInt(int number);
+
+void PrintInt2(int number);
 
 char ReadChar();
 

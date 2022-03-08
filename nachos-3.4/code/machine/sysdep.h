@@ -54,7 +54,6 @@ extern int Random();
 // just beyond either end of the array will cause an error
 extern char *AllocBoundedArray(int size);
 extern void DeallocBoundedArray(char *p, int size);
-
 // Other C library routines that are used by Nachos.
 // These are assumed to be portable, so we don't include a wrapper.
 extern "C" {

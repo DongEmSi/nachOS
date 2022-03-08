@@ -89,6 +89,7 @@ int rand(void);
 unsigned sleep(unsigned);
 void abort();
 void exit(int);
+
   //int mprotect(char *addr, int len, int prot);
 
   //int socket(int, int, int);

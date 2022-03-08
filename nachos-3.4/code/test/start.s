@@ -146,6 +146,14 @@ PrintInt:
 	j $31
 	.end PrintInt
 
+	.globl PrintInt2
+	.ent PrintInt2
+PrintInt2:
+	addiu $2,$0,SC_PrintInt2
+	syscall
+	j $31
+	.end PrintInt2
+
 	.globl ReadChar
 	.ent ReadChar
 ReadChar :

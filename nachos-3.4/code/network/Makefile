@@ -322,7 +322,7 @@ exception.o: ../userprog/exception.cc ../threads/copyright.h \
  ../threads/synchcons.h ../machine/console.h ../threads/synch.h \
  ../filesys/synchdisk.h ../machine/disk.h ../threads/synch.h \
  ../network/post.h ../machine/network.h ../threads/synchlist.h \
- ../userprog/syscall.h
+ ../userprog/syscall.h /usr/include/time.h /usr/include/bits/time.h
 progtest.o: ../userprog/progtest.cc ../threads/copyright.h \
  ../threads/system.h ../threads/copyright.h ../threads/utility.h \
  ../threads/bool.h ../machine/sysdep.h /usr/include/stdio.h \

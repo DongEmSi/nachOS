@@ -1,10 +1,13 @@
 #include "syscall.h"
-#include "copyright.h"
 
 int main() {
-	int a = ReadInt();
+	//int a = ReadInt();
+	char* buf;
+	int length;
 
-	PrintInt(a);
+	ReadString(buf, length);
+
+	PrintString(buf);
 
 	Halt();
 }

@@ -24,6 +24,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
+#include "time.h"
 #define MaxFileLength 32
 
 //----------------------------------------------------------------------
@@ -185,6 +186,7 @@ ExceptionHandler(ExceptionType which)
 				{
 					Exit(0);
 					IncreasePC();
+					break;
 				}
 				//Nho them increasePC vao truoc break hoac return nhe!
 
@@ -268,7 +270,7 @@ ExceptionHandler(ExceptionType which)
 					return;
 				}
 
-				case SC_PrintInt:
+				case SC_PrintInt2:
 				{
 					int number = machine->ReadRegister(4);
 
@@ -351,25 +353,33 @@ ExceptionHandler(ExceptionType which)
 				{
 					int virtAddr, size;
 					char* buf;
+
 					virtAddr = machine->ReadRegister(4);
 					size = machine->ReadRegister(5);
+
 					buf = User2System(virtAddr, size);
 					synchcons->Read(buf, size);
 					System2User(virtAddr, size, buf);
-					delete buf;
+
+					
 					IncreasePC();
-					break;
+					delete buf;
+					return;
 				}
 
 				case SC_PrintString:
 				{
 					int virtAddr;
 					char* buf;
+
 					virtAddr = machine->ReadRegister(4);
 					buf = User2System(virtAddr, 255);
+
 					int size = 0;
-					while (buf[size] != 0) size++;
+					while (buf[size] != '\0') size++;
+
 					synchcons->Write(buf, size + 1);
+
 					delete buf;
 					IncreasePC();
 					break;
@@ -380,14 +390,14 @@ ExceptionHandler(ExceptionType which)
 					int start = 0;
 					int maxBuf = 255;
 					char* buf = new char[255];
-					RandomInit(123);
-					int r = Random();
+					RandomInit(time(NULL));
+					int r = Random() % 100000;
 					while (r != 0) {
-						buf[start] = (char)(r % 10);
+						buf[start++] = (r % 10) + '0';
 						r /= 10;
 					}
 					buf[start] = '\0';
-					reverse(buf, 1, start - 1);
+					reverse(buf, 0, start - 1);
 					synchcons->Write(buf, start);
 					IncreasePC();
 					break;
