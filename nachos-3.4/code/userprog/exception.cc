@@ -197,9 +197,10 @@ ExceptionHandler(ExceptionType which)
 					bool isNegative = false;
 					int start = 0, size, ans = 0;
 					
+					//Đọc số lượng các chữ số từ màn hình
 					size = synchcons->Read(buf, maxBuf);
 
-					if (size == 0) {
+					if (size == 0) { //Người dùng ko nhập gì 
 						DEBUG('a', "\n Invalid number.");
 						printf("\n\n Invalid number.");
 
@@ -209,15 +210,15 @@ ExceptionHandler(ExceptionType which)
 						return;
 					}
 
-					if (buf[0] == '-') {
+					if (buf[0] == '-') { //Check xem có phải số âm => Cuối hàm xử lí tiếp
 						isNegative = true;
-						start = 1;
+						start = 1; //Đọc tiếp bỏ qua dấu trừ
 					}
 
 					for (int i = start; i < size; ++i) {
-						if (buf[i] == '.') {
+						if (buf[i] == '.') { //Xử lí trong trường hợp có dấu chấm. Vd: 1.00000 vẫn là số 1
 							for (int j = i + 1; j < size; ++j) {
-								if (buf[j] != '0') {
+								if (buf[j] != '0') { //Nếu các số sau dấu chấm thì khác 0 thì số ko hợp lệ
 									DEBUG('a', "\n Invalid number.");
 									printf("\n\n Invalid number.");
 
@@ -232,7 +233,7 @@ ExceptionHandler(ExceptionType which)
 							delete buf;
 							return;
 						}
-						else if (buf[i] < '0' || buf[i] > '9') {
+						else if (buf[i] < '0' || buf[i] > '9') { //Trường hợp người dùng nhập kí tự ko phải là số
 							DEBUG('a', "\n Invalid number.");
 							printf("\n\n Invalid number.");
 
@@ -242,9 +243,9 @@ ExceptionHandler(ExceptionType which)
 							return;
 						}
 						else {
-							ans = ans*10 + (buf[i] - '0');
+							ans = ans*10 + (buf[i] - '0'); 
 							++start;
-							if (start > 10 && !isNegative) {
+							if (start > 10 && !isNegative) { //Trường hợp số quá lớn, ta quy về số lớn nhất có thể 
 								ans = 2147483647;
 
 								machine->WriteRegister(2, ans);
@@ -252,7 +253,7 @@ ExceptionHandler(ExceptionType which)
 								delete buf;
 								return;
 							}
-							else if (start > 11 && isNegative) {
+							else if (start > 11 && isNegative) { //Trường hợp số quá nhỏ
 								ans = -2147483647;
 								machine->WriteRegister(2, ans);
 								IncreasePC();
@@ -262,7 +263,7 @@ ExceptionHandler(ExceptionType which)
 						}
 					}
 
-					if (isNegative) ans *= -1;
+					if (isNegative) ans *= -1; //Xử lí trường hợp nếu là số âm 
 
 					machine->WriteRegister(2, ans);
 					IncreasePC();
@@ -272,9 +273,10 @@ ExceptionHandler(ExceptionType which)
 
 				case SC_PrintInt2:
 				{
-					int number = machine->ReadRegister(4);
+					int number = machine->ReadRegister(4); // Đọc số từ màn hình người nhập
+					//HĐH chỉ có thể in chuỗi kí tự nên phải chuyển số thành chuỗi kí tự
 
-					if (number == 0) {
+					if (number == 0) { //Trường hợp số là 0, xử lí trường hợp đặc biệt
 						synchcons->Write("0", 1);
 						IncreasePC();
 						break;
@@ -285,29 +287,30 @@ ExceptionHandler(ExceptionType which)
 					bool isNegative = false;
 					int start = 0;
 
-					if (number < 0) {
-						isNegative = true;
-						number *= -1;
-						buf[start++] = '-';
+					if (number < 0) { //Trường hợp là số âm
+						isNegative = true; //Để cuối hàm xử lí 
+						number *= -1; //Chuyển thành số dương để tính toán dễ hơn
+						buf[start++] = '-'; //buf[0] = '-'
 					}
 
-					while (number != 0) {
+					while (number != 0) { //Chuyển đổi số thành chuỗi kí tự
 						buf[start++] = (number % 10) + '0';
-						number /= 10;
+						number /= 10; 
 					}
 
-					if (isNegative) {
+					if (isNegative) { //Trường hợp số âm
 						buf[0] = '-';
 						buf[start] = '\0';
 
-						reverse(buf, 1, start - 1);
+						reverse(buf, 1, start - 1); //Do đọc chuỗi bị ngược nên đảo chuỗi lại
 
 						synchcons->Write(buf, start);
 						IncreasePC();
 						break;
 					}
 
-					buf[start] = '\0';
+					buf[start] = '\0'; 
+					//Trường hợp số dương
 					reverse(buf, 0, start - 1);
 					synchcons->Write(buf, start);
 					IncreasePC();
@@ -318,7 +321,7 @@ ExceptionHandler(ExceptionType which)
 				{
 					int maxBuf = 255;
 					char* buf = new char[255];
-					int numBuf = synchcons->Read(buf, maxBuf);
+					int numBuf = synchcons->Read(buf , maxBuf);
 
 					if (numBuf > 1)
 					{
