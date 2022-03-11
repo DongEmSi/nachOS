@@ -188,19 +188,20 @@ ExceptionHandler(ExceptionType which)
 					IncreasePC();
 					break;
 				}
-				//Nho them increasePC vao truoc break hoac return nhe!
+				//Nho them increasePC vao truoc break hoac return nhe 2 ban!
 
 				case SC_ReadInt: 
 				{
-					int maxBuf = 255; //integer co 4 bytes, theo chuan c++ 
+					int maxBuf = 255; // Theo chuẩn C++ thì integer có 4 bytes.
 					char* buf = new char[maxBuf + 1];
 					bool isNegative = false;
 					int start = 0, size, ans = 0;
 					
-					//Đọc số lượng các chữ số từ màn hình
+					// Đọc số lượng các chữ số từ màn hình.
 					size = synchcons->Read(buf, maxBuf);
 
-					if (size == 0) { //Người dùng ko nhập gì 
+					// Xử lý lỗi khi người dùng không nhập gì.
+					if (size == 0) {
 						DEBUG('a', "\n Invalid number.");
 						printf("\n\n Invalid number.");
 
@@ -209,16 +210,17 @@ ExceptionHandler(ExceptionType which)
 						delete buf;
 						return;
 					}
-
-					if (buf[0] == '-') { //Check xem có phải số âm => Cuối hàm xử lí tiếp
+					
+					// Kiểm tra xem số đang đọc có phải là số âm hay không, nếu là số âm thì cuối hàm tiếp tục xử lý.
+					if (buf[0] == '-') {
 						isNegative = true;
-						start = 1; //Đọc tiếp bỏ qua dấu trừ
+						start = 1; // Vẫn đọc tiếp nhưng bỏ qua dấu trừ
 					}
 
 					for (int i = start; i < size; ++i) {
-						if (buf[i] == '.') { //Xử lí trong trường hợp có dấu chấm. Vd: 1.00000 vẫn là số 1
+						if (buf[i] == '.') { // Xử lí trường hợp có dấu chấm, ví dụ nếu người dùng nhập 1.00000 thì vẫn là 1.
 							for (int j = i + 1; j < size; ++j) {
-								if (buf[j] != '0') { //Nếu các số sau dấu chấm thì khác 0 thì số ko hợp lệ
+								if (buf[j] != '0') { // Nếu các số sau dấu chấm khác không thì coi như số đó không hợp lệ vì đang làm kiểu int
 									DEBUG('a', "\n Invalid number.");
 									printf("\n\n Invalid number.");
 
@@ -233,7 +235,7 @@ ExceptionHandler(ExceptionType which)
 							delete buf;
 							return;
 						}
-						else if (buf[i] < '0' || buf[i] > '9') { //Trường hợp người dùng nhập kí tự ko phải là số
+						else if (buf[i] < '0' || buf[i] > '9') { // Xử lý trường hợp người dùng nhập ký tự không phải là số.
 							DEBUG('a', "\n Invalid number.");
 							printf("\n\n Invalid number.");
 
@@ -243,9 +245,9 @@ ExceptionHandler(ExceptionType which)
 							return;
 						}
 						else {
-							ans = ans*10 + (buf[i] - '0'); 
+							ans = ans*10 + (buf[i] - '0');
 							++start;
-							if (start > 10 && !isNegative) { //Trường hợp số quá lớn, ta quy về số lớn nhất có thể 
+							if (start > 10 && !isNegative) { // Xử lý trường hợp nếu như số quá lớn, ta quy về số lớn nhất có thể có. 
 								ans = 2147483647;
 
 								machine->WriteRegister(2, ans);
@@ -253,8 +255,8 @@ ExceptionHandler(ExceptionType which)
 								delete buf;
 								return;
 							}
-							else if (start > 11 && isNegative) { //Trường hợp số quá nhỏ
-								ans = -2147483647;
+							else if (start > 11 && isNegative) {
+								ans = -2147483647; // Xử lý tương tự như trường hợp số quá nhỏ
 								machine->WriteRegister(2, ans);
 								IncreasePC();
 								delete buf;
@@ -263,7 +265,7 @@ ExceptionHandler(ExceptionType which)
 						}
 					}
 
-					if (isNegative) ans *= -1; //Xử lí trường hợp nếu là số âm 
+					if (isNegative) ans *= -1; // Tiếp tục xử lý trường hợp nếu số đọc vào là số âm.
 
 					machine->WriteRegister(2, ans);
 					IncreasePC();
@@ -273,10 +275,9 @@ ExceptionHandler(ExceptionType which)
 
 				case SC_PrintInt2:
 				{
-					int number = machine->ReadRegister(4); // Đọc số từ màn hình người nhập
-					//HĐH chỉ có thể in chuỗi kí tự nên phải chuyển số thành chuỗi kí tự
+					int number = machine->ReadRegister(4); // Đọc số từ màn hình người dùng nhập.
 
-					if (number == 0) { //Trường hợp số là 0, xử lí trường hợp đặc biệt
+					if (number == 0) { // Trường hợp số là 0 thì coi nó là trường hợp đặc biệt
 						synchcons->Write("0", 1);
 						IncreasePC();
 						break;
@@ -287,30 +288,32 @@ ExceptionHandler(ExceptionType which)
 					bool isNegative = false;
 					int start = 0;
 
-					if (number < 0) { //Trường hợp là số âm
-						isNegative = true; //Để cuối hàm xử lí 
-						number *= -1; //Chuyển thành số dương để tính toán dễ hơn
-						buf[start++] = '-'; //buf[0] = '-'
+					// Xử lý trường hợp nếu là số âm
+					if (number < 0) {
+						isNegative = true; // Đánh dấu để cuối hàm xử lý
+						number *= -1; // Chuyển thành số dương để tính toán được dễ hơn
+						buf[start++] = '-'; // buf[0] = '-'
 					}
 
-					while (number != 0) { //Chuyển đổi số thành chuỗi kí tự
+					while (number != 0) { // Chuyển đổi số thành ký tự
 						buf[start++] = (number % 10) + '0';
-						number /= 10; 
+						number /= 10;
 					}
 
-					if (isNegative) { //Trường hợp số âm
+					if (isNegative) { // Xử lý trường hợp số âm
 						buf[0] = '-';
 						buf[start] = '\0';
 
-						reverse(buf, 1, start - 1); //Do đọc chuỗi bị ngược nên đảo chuỗi lại
+						reverse(buf, 1, start - 1); // Đọc chuỗi bị ngược nên phải đảo lại chuỗi
 
 						synchcons->Write(buf, start);
 						IncreasePC();
 						break;
 					}
 
-					buf[start] = '\0'; 
-					//Trường hợp số dương
+					buf[start] = '\0';
+
+					// Trường hợp số là dương
 					reverse(buf, 0, start - 1);
 					synchcons->Write(buf, start);
 					IncreasePC();
@@ -319,26 +322,32 @@ ExceptionHandler(ExceptionType which)
 
 				case SC_ReadChar:
 				{
+					// Hàm đọc một ký tự duy nhất từ ngừoi dùng nhập
 					int maxBuf = 255;
 					char* buf = new char[255];
-					int numBuf = synchcons->Read(buf , maxBuf);
+					int numBuf = synchcons->Read(buf, maxBuf);
 
+					// Xử lý các ngoại lệ từ người dùng nhập vào
+					// Nếu người dùng nhập vào nhiều hơn 1 kí tự sẽ xảy ra lỗi, ta cần thông báo lỗi này:
 					if (numBuf > 1)
 					{
 						printf("This is not a character.");
 						DEBUG('a', "\nERROR: This is not a character.");
 						machine->WriteRegister(2, 0);
 					}
+					// Người dùng không nhập hoặc đây là kí tự rỗng
 					else if (numBuf == 0)
 					{
 						printf("No input!");
 						DEBUG('a', "\nERROR: No input!");
 						machine->WriteRegister(2, 0);
 					}
-					else
+					else 
 					{
+						// Lấy đúng kí tự đầu tiên của chuỗi vừa nhập đưa vào thanh ghi thứ 2.
 						machine->WriteRegister(2, buf[0]);
 					}
+
 					IncreasePC();
 					delete buf;
 					break;
@@ -346,7 +355,10 @@ ExceptionHandler(ExceptionType which)
 
 				case SC_PrintChar:
 				{
+					// Ở thanh ghi 4 có kí tự được lưu vào, ta đọc kí tự trong thanh ghi này bằng lệnh ở dưới đây:
 					char c = (char)machine->ReadRegister(4);
+					
+					// Sử dụng biến toàn cục của lớp synchconsole để in kí tự biến c ra màn hình, nó là 1 byte
 					synchcons->Write(&c, 1);
 					IncreasePC();
 					break;
@@ -354,20 +366,44 @@ ExceptionHandler(ExceptionType which)
 
 				case SC_ReadString:
 				{
-					int virtAddr, size;
-					char* buf;
+					// Lấy địa chỉ từ thanh ghi thứ 4
+					int virtAddr = machine->ReadRegister(4);
 
-					virtAddr = machine->ReadRegister(4);
-					size = machine->ReadRegister(5);
+					// Lấy size của chuỗi từ thanh ghi thứ 5.
+					int size = machine->ReadRegister(5);
 
-					buf = User2System(virtAddr, size);
-					synchcons->Read(buf, size);
-					System2User(virtAddr, size, buf);
+					// Nếu size là số âm hoặc là 0 thì đây là chuỗi không hợp lệ, ta tắt hệ điều hành để tránh bị treo.
+					if (size <= 0)
+					{
+						interrupt->Halt();
+						return; 
+					}
 
+					// Cấp phát vùng nhớ cho biến buffer lưu chuỗi.
+					char* buf = new char[size + 1];
+
+					// Lấy độ dài tối đa mà nó đọc được để kiểm tra tính hợp lệ.
+					int check = synchcons->Read(buf, size);
+
+					// Nếu như không đọc được thì sẽ ngắt hệ điều hành.
+					if (check == -1) 
+					{
+						interrupt->Halt();
+						return; 
+					} 
 					
+					// Tương tự cho người dùng không nhập gì hoặc đó là kí tự trống
+					if (check == 0) break;
+
+					// Thêm vào cuối chuỗi kí tự thoát.
+					buf[check] = '\0';
+
+					// Copy giá trị từ system space sang user space. 
+					System2User(virtAddr, size + 1, buf);
+
 					IncreasePC();
 					delete buf;
-					return;
+					break;
 				}
 
 				case SC_PrintString:
@@ -375,7 +411,10 @@ ExceptionHandler(ExceptionType which)
 					int virtAddr;
 					char* buf;
 
+					// Lấy địa chỉ từ thanh ghi thứ 4
 					virtAddr = machine->ReadRegister(4);
+
+					// Biến buf của kernel lấy từ user (địa chỉ chuỗi từ thành ghi thứ 4)
 					buf = User2System(virtAddr, 255);
 
 					int size = 0;
@@ -393,6 +432,8 @@ ExceptionHandler(ExceptionType which)
 					int start = 0;
 					int maxBuf = 255;
 					char* buf = new char[255];
+
+					// Hàm rand tạo số ngẫu nhiên, giới hạn khoảng của nó dưới 100000
 					RandomInit(time(NULL));
 					int r = Random() % 100000;
 					while (r != 0) {

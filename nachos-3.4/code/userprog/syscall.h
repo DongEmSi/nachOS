@@ -37,7 +37,6 @@
 #define SC_PrintString	16
 #define SC_Rand		17
 #define SC_PrintInt2    18
-
 #ifndef IN_ASM
 
 /* The system call interface.  These are the operations the Nachos
@@ -53,7 +52,6 @@
 /* Stop Nachos, and print out performance stats */
 void Halt();		
  
-
 /* Address space control operations: Exit, Exec, and Join */
 
 /* This user program is done (status = 0 means exited normally). */
@@ -130,8 +128,6 @@ int Read(char *buffer, int size, OpenFileId id);
 
 /* Close the file, we're done reading and writing to it. */
 void Close(OpenFileId id);
-
-
 
 /* User-level thread operations: Fork and Yield.  To allow multiple
  * threads to run within a user program. 

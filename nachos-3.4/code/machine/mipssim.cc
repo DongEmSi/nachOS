@@ -554,7 +554,7 @@ Machine::OneInstruction(Instruction *instr)
     
     // Now we have successfully executed the instruction.
     
-    // Do any delayed load operation
+    // Do any delayed load operationS
     DelayedLoad(nextLoadReg, nextLoadValue);
     
     // Advance program counters.
