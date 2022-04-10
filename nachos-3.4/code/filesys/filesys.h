@@ -42,54 +42,93 @@
 				// calls to UNIX, until the real file system
 				// implementation is available
 class FileSystem {
-  public:
-    FileSystem(bool format) {}
+	public:
+		OpenFile** opfile;
+		int index;
+		FileSystem(bool format) {
+			opfile = new OpenFile * [10];
+			index = 0;
+			for (int i = 0; i < 10; i++)
+				opfile[i] = NULL;
+			this->Create("input", 0);
+			this->Create("output", 0);
+			opfile[index++] = this->Open("input");
+			opfile[index++] = this->Open("output");
+		}
 
-    bool Create(char *name, int initialSize) { 
-	int fileDescriptor = OpenForWrite(name);
+		~FileSystem() {
+			for (int i = 0; i < 10; i++) {
+				if (opfile[i] != NULL) delete opfile[i];
+			}
+			delete[] opfile;
+		}
 
-	if (fileDescriptor == -1) return FALSE;
-	Close(fileDescriptor); 
-	return TRUE; 
-	}
+		bool Create(char *name, int initialSize) { 
+			int fileDescriptor = OpenForWrite(name);
 
-    OpenFile* Open(char *name) {
-	  int fileDescriptor = OpenForReadWrite(name, FALSE);
+			if (fileDescriptor == -1) return FALSE;
+			Close(fileDescriptor); 
+			return TRUE; 
+		}
 
-	  if (fileDescriptor == -1) return NULL;
-	  return new OpenFile(fileDescriptor);
-      }
+		OpenFile* Open(char *name) {
+			int fileDescriptor = OpenForReadWrite(name, FALSE);
 
-    bool Remove(char *name) { return Unlink(name) == 0; }
+			if (fileDescriptor == -1) return NULL;
+			return new OpenFile(fileDescriptor);
+		  }
+
+		bool Remove(char* name) { return Unlink(name) == 0; }
+
+		int findEmptyPosition() {
+			for (int i = 0; i < 10; i++) {
+				if (opfile[i] == NULL) return i;
+			}
+			return -1;
+		}
+
+		bool isOpen(char* name) {
+			for (int i = 1; i < 10; i++) {
+				//if(strcmp(this->opfile[i]->fileName,name)==0) 
+				if (false) return 1;
+			}
+			return 0;
+		}
 
 };
 
 #else // FILESYS
 class FileSystem {
-  public:
-    FileSystem(bool format);		// Initialize the file system.
-					// Must be called *after* "synchDisk" 
-					// has been initialized.
-    					// If "format", there is nothing on
-					// the disk, so initialize the directory
-    					// and the bitmap of free blocks.
+	public:
+		OpenFile** opfile;
+		int index;
+		FileSystem(bool format);		// Initialize the file system.
+						// Must be called *after* "synchDisk" 
+						// has been initialized.
+    						// If "format", there is nothing on
+						// the disk, so initialize the directory
+    						// and the bitmap of free blocks.
 
-    bool Create(char *name, int initialSize);  	
-					// Create a file (UNIX creat)
+		bool Create(char *name, int initialSize);  	
+						// Create a file (UNIX creat)
 
-    OpenFile* Open(char *name); 	// Open a file (UNIX open)
+		OpenFile* Open(char *name); 	// Open a file (UNIX open)
 
-    bool Remove(char *name);  		// Delete a file (UNIX unlink)
+		bool Remove(char *name);  		// Delete a file (UNIX unlink)
 
-    void List();			// List all the files in the file system
+		void List();			// List all the files in the file system
 
-    void Print();			// List all the files and their contents
+		void Print();			// List all the files and their contents
 
-  private:
-   OpenFile* freeMapFile;		// Bit map of free disk blocks,
-					// represented as a file
-   OpenFile* directoryFile;		// "Root" directory -- list of 
-					// file names, represented as a file
+		int findEmptyPosition();
+
+		bool isOpen(char* name);
+
+	private:
+	   OpenFile* freeMapFile;		// Bit map of free disk blocks,
+						// represented as a file
+	   OpenFile* directoryFile;		// "Root" directory -- list of 
+						// file names, represented as a file
 };
 
 #endif // FILESYS

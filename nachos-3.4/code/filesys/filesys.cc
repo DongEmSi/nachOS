@@ -140,6 +140,14 @@ FileSystem::FileSystem(bool format)
         freeMapFile = new OpenFile(FreeMapSector);
         directoryFile = new OpenFile(DirectorySector);
     }
+    opfile = new OpenFile * [10];
+    index = 0;
+    for (int i = 0; i < 10; i++)
+        opfile[i] = NULL;
+    opfile[index++] = this->Open("input");
+    opfile[index++] = this->Open("output");
+    this->Create("input", 0);
+    this->Create("output", 0);
 }
 
 //----------------------------------------------------------------------
@@ -240,6 +248,19 @@ FileSystem::Open(char *name)
     return openFile;				// return NULL if not found
 }
 
+int FileSystem::findEmptyPosition() {
+    for (int i = 2; i < 10; i++)
+        if (opfile[i] == NULL) return i;
+    return -1;
+}
+
+bool FileSystem::isOpen(char* name) {
+    for (int i = 1; i < 10; i++) {
+        //if(strcmp(this->opfile[i]->fileName,name)==0) 
+        if (false) return 1;
+    }
+    return 0;
+}
 //----------------------------------------------------------------------
 // FileSystem::Remove
 // 	Delete a file from the file system.  This requires:

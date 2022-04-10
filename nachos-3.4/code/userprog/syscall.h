@@ -22,11 +22,11 @@
 #define SC_Exit		1
 #define SC_Exec		2
 #define SC_Join		3
-#define SC_Create	4
-#define SC_Open		5
-#define SC_Read		6
-#define SC_Write	7
-#define SC_Close	8
+#define SC_Create	4 //
+#define SC_Open		5 //
+#define SC_Read		6 // 
+#define SC_Write	7 //
+#define SC_Close	8 // 
 #define SC_Fork		9
 #define SC_Yield	10
 #define SC_ReadInt     11
@@ -37,6 +37,8 @@
 #define SC_PrintString	16
 #define SC_Rand		17
 #define SC_PrintInt2    18
+#define SC_Seek			19
+#define SC_Remove		20
 #ifndef IN_ASM
 
 /* The system call interface.  These are the operations the Nachos
@@ -109,6 +111,7 @@ void ReadString(char* buffer, int length);
 
 void PrintString(char* buffer);
 
+
 int Rand();
 /* Open the Nachos file "name", and return an "OpenFileId" that can 
  * be used to read and write to the file.
@@ -130,8 +133,11 @@ int Read(char *buffer, int size, OpenFileId id);
 void Close(OpenFileId id);
 
 /* User-level thread operations: Fork and Yield.  To allow multiple
- * threads to run within a user program. 
- */
+threads to run within a user program. */
+
+int Seek(int position, OpenFileId id);
+
+int Remove(char* name);
 
 /* Fork a thread to run a procedure ("func") in the *same* address space 
  * as the current thread.

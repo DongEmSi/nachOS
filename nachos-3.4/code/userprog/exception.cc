@@ -431,7 +431,7 @@ ExceptionHandler(ExceptionType which)
 				{
 					int start = 0;
 					int maxBuf = 255;
-					char* buf = new char[255];
+					char* buf = new char[maxBuf];
 
 					// Hàm rand tạo số ngẫu nhiên, giới hạn khoảng của nó dưới 100000
 					RandomInit(time(NULL));
@@ -465,7 +465,7 @@ ExceptionHandler(ExceptionType which)
 						machine->WriteRegister(2,-1); // trả về lỗi cho chương
 						// trình người dùng
 						
-						//IncreasePC();
+						IncreasePC();
 						delete filename;
 						break;
 					}
@@ -480,15 +480,141 @@ ExceptionHandler(ExceptionType which)
 					if (!fileSystem->Create(filename,0)){
 						printf("\n Error create file '%s'",filename);
 						machine->WriteRegister(2,-1);
-						//IncreasePC();
+						IncreasePC();
 						delete filename;
 						break;
 					}
 					machine->WriteRegister(2,0); // trả về cho chương trình
 					// người dùng thành công
-					//IncreasePC();
+					IncreasePC();
 					delete filename;
 					break;
+				}
+				case SC_Open:
+				{
+					// Output: Tra ve OpenFileID neu thanh cong, -1 neu loi
+					//OpenFileID Open(char *name, int type)
+					int virtAddr = machine->ReadRegister(4);
+					char* filename;
+					filename = User2System(virtAddr, MaxFileLength);
+					int slot = fileSystem->findEmptyPosition();
+					if ((fileSystem->opfile[slot] = fileSystem->Open(filename)) == NULL) {
+						printf("%s: File not exist!\n", filename);
+						interrupt->Halt();
+					}
+					if (slot != -1) {
+						printf("\nMo file thanh cong: %s", filename);
+						printf("\nSlot: %d", slot);
+						machine->WriteRegister(2, slot);
+						IncreasePC();
+						delete[] filename;
+						break;
+					}
+					machine->WriteRegister(2, -1); //Khong mo duoc file return -1
+
+					delete[] filename;
+					break;
+				}
+
+				case SC_Close:
+				{
+					// void Close(OpenFileId id);
+					// Output: 0: thanh cong, -1 that bai
+					int fileid = machine->ReadRegister(4);
+					if (fileid >= 0 && fileid <= 9)
+					{
+						if (fileSystem->opfile[fileid]) //neu mo file thanh cong
+						{
+							printf("\nClose file");
+							delete fileSystem->opfile[fileid]; //Xoa vung nho luu tru file
+							fileSystem->opfile[fileid] = NULL; //Gan vung nho NULL
+							machine->WriteRegister(2, 0);
+							IncreasePC();
+							break;
+						}
+					}
+					//printf("\nClose file");
+					machine->WriteRegister(2, -1);
+					IncreasePC();
+					break;
+				}
+
+				case SC_Read:
+				{
+					int virtAddr = machine->ReadRegister(4); // Lay dia chi cua tham so buffer tu thanh ghi so 4
+					int charcount = machine->ReadRegister(5); // Lay charcount tu thanh ghi so 5
+					int id = machine->ReadRegister(6); // Lay id cua file tu thanh ghi so 6 
+					int OldPos, NewPos;
+					char* buffer;
+					// Check id in file board
+					if (id < 0 || id > 9)
+					{
+						printf("\nFile board description out of range!");
+						machine->WriteRegister(2, -1);
+						IncreasePC();
+						return;
+					}
+					if (fileSystem->opfile[id] == NULL)
+					{
+						printf("\nFile not exist!");
+						machine->WriteRegister(2, -1);
+						IncreasePC();
+						return;
+					}
+					OldPos = fileSystem->opfile[id]->getCurPos(); // Kiem tra thanh cong thi lay vi tri OldPos
+					buffer = User2System(virtAddr, charcount); // Copy chuoi tu vung nho User Space sang System Space voi bo dem buffer dai charcount
+					// Xet truong hop doc file binh thuong thi tra ve so byte thuc su
+					if ((fileSystem->opfile[id]->Read(buffer, charcount)) > 0) {
+						// So byte thuc su = NewPos - OldPos
+						NewPos = fileSystem->opfile[id]->getCurPos();
+						// Copy chuoi tu vung nho System Space sang User Space voi bo dem buffer co do dai la so byte thuc su 
+						System2User(virtAddr, NewPos - OldPos, buffer);
+						machine->WriteRegister(2, NewPos - OldPos);
+						//printf("%s", buffer);
+						IncreasePC();
+					}
+					else {
+						// Truong hop con lai la doc file co noi dung la NULL tra ve -2
+						printf("\nEmpty file");
+						machine->WriteRegister(2, -2);
+						IncreasePC();
+					}
+					delete[] buffer;
+					return;
+				}
+				case SC_Write:
+				{
+					int virtAddr = machine->ReadRegister(4); // Lay dia chi cua tham so buffer tu thanh ghi so 4
+					int charcount = machine->ReadRegister(5); // Lay charcount tu thanh ghi so 5
+					int id = machine->ReadRegister(6); // Lay id cua file tu thanh ghi so 6
+					int OldPos, NewPos;
+					char* buffer;
+					if (id < 0 || id > 9)
+					{
+						printf("\nFile board description out of range!");
+						machine->WriteRegister(2, -1);
+						IncreasePC();
+						return;
+					}
+					// Kiem tra file co ton tai khong
+					if (fileSystem->opfile[id] == NULL)
+					{
+						printf("\nFile not exist!");
+						machine->WriteRegister(2, -1);
+						IncreasePC();
+						return;
+					}
+					OldPos = fileSystem->opfile[id]->getCurPos(); // Kiem tra thanh cong thi lay vi tri OldPos
+					buffer = User2System(virtAddr, charcount);  // Copy chuoi tu vung nho User Space sang System Space voi bo dem buffer dai charcount
+					if ((fileSystem->opfile[id]->Write(buffer, charcount)) > 0){
+							// So byte thuc su = NewPos - OldPos
+							printf("Runable\n");
+							NewPos = fileSystem->opfile[id]->getCurPos();
+							machine->WriteRegister(2, NewPos - OldPos);
+							delete[] buffer;
+							IncreasePC();
+							return;
+					}
 				}
 				default:
 					printf("\n Unexpected user mode exception (%d %d)", which, type);
